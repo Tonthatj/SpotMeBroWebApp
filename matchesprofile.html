@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Matches' Profile</title>
+  <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+  <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+  <script type="text/javascript" src="mainpage.js"></script>
+  <link rel="stylesheet" type="text/css" href="matchesprofile.css">
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyAK7odv2vBxJdDMThZHkBjoNdsypVNDGDU",
+      authDomain: "spotmebro-82458.firebaseapp.com",
+      databaseURL: "https://spotmebro-82458.firebaseio.com",
+      projectId: "spotmebro-82458",
+      storageBucket: "spotmebro-82458.appspot.com",
+      messagingSenderId: "737240148087"
+    };
+    firebase.initializeApp(config);
+
+    firebase.auth().onAuthStateChanged(firebaseUser => {
+      if (firebaseUser) {
+        /* // commented out to avoid error in console
+        var uidPERM = firebaseUser.uid;
+        var currentUser = firebaseUser.uid;
+    	  var gender = fbRef.child(uidPERM).child("Gender").val();
+    	  var pref_gender = fbRef.child(uidPERM).child("Preferences").child("Preferred_Gender").val();
+    	  var style = fbRef.child(uidPERM).child("Preferences").child("Style").val();
+  	  //assign as global vars */
+
+      } else {
+        // also onclick functions for logout button in html file
+        console.log('not logged in');
+        window.location = "signin.html";
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="btn-group">
+		<button onclick="location.href='mainpage.html'"><strong>Home Page</strong></a></button>
+		<button onclick="location.href='about.html'"><strong>About SpotMeBro</strong></button>
+		<button onclick="location.href='matchespage.html'"><strong>Go to your Matches</strong></button>
+		<button onclick="location.href='preferenceEditor.html'"><strong>Go to your Preference Editor</strong></button>
+		<button onclick="location.href='profilepage.html'"><strong>Go to your Profile</strong></button>
+		<button onclick="location.href='availability.html'"><strong>Select your Availability</strong></button>
+		<button onclick="location.href='conversations.html'"><strong>Conversations</strong></button>
+		<button onclick="location.href='contact.html'"><strong>Contact SpotMeBro</strong></button>
+		<button onclick="location.href='help.html'"><strong>Help</strong></button>
+		<button id="btnSignOut" onclick="firebase.auth().signOut();" onclick="window.location = 'signin.html'"><strong>Logout</strong></button>
+	</div>
+  <div class="container">
+    <h1>Matches Profile</h1>
+    <div id="matchSection">
+      <p id="Name"></p>
+      <p id="Email"></p>
+      <p id="Gender"></p>
+    </div>
+    <button onclick="createConversation()">Create Conversation</button>
+  </div>
+
+  <script src="matchespage.js"></script>
+  <script>
+    const dbRef = firebase.database().ref('Users');
+    var clickedMatchesEmail = window.location.href;
+    var nameVal, emailVal, genderVal;
+
+    window.onload = function profileInfo(){
+      var ref = firebase.database().ref("Users");
+      ref.on("value", profileData, errData);
+    }
+
+    function profileData(data) {
+      clickedMatchesEmail = clickedMatchesEmail.split("?");
+      clickedMatchesEmail = clickedMatchesEmail[1].split("=");
+
+      var allData = data.val();
+      var keys = Object.keys(allData);
+
+      for(var i = 0; i < keys.length; i++){
+        var k = keys[i];
+        var emailFbVal = allData[k].Email;
+        var checkEmail = clickedMatchesEmail[1];
+        if(checkEmail == emailFbVal){
+          nameVal = allData[k].Name;
+          emailVal = allData[k].Email;
+          genderVal = allData[k].Gender;
+
+          document.getElementById("Name").innerHTML += "Name: " + nameVal;
+          document.getElementById("Email").innerHTML += "Email: " + emailVal;
+          document.getElementById("Gender").innerHTML += "Gender: " + genderVal;
+        } else {
+
+        }
+      }
+    }
+
+    function errData(error){
+      console.log("Error: " + error);
+    }
+
+    function createConversation() {
+      console.log(nameVal);
+      console.log(emailVal);
+      console.log(genderVal);
+
+      var userId = firebase.auth().currentUser.uid;
+      return firebase.database().ref('/Users/' + userId).once('value').then(function(snapshot) {
+
+        var myname = snapshot.val().Name;
+        var d = new Date();
+        var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        var month = months[d.getMonth()];
+        var day = d.getDate();
+
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+        var md = "";
+
+        if (m < 10) {
+          m = "0" + m;
+        }
+
+        if (s < 10) {
+          s = "0" + s;
+        }
+
+        if (h >= 12) {
+          md = "PM";
+          if (h >= 13){
+            h = h - 12;
+          }
+        } else {
+          md = "AM";
+        }
+
+        firebase.database().ref().child("Messages").child(nameVal + "-" + myname).child("MessageList").push().set(
+           // make like mobile
+           "Started a conversation-" + myname + "-" + month + " " + day + ", " + d.getFullYear() + " " +  h + ":" + m + ":" + s + " " + md
+        );
+
+        alert ("You have just started a conversation with " + nameVal + "! Please click on the conversations tab on the left side of the screen to view all your conversations.");
+      });
+          /*
+          firebase.database().ref().child("Messages").child(myname + "-" +nameVal).child("MessageList").set({
+             a:"text"
+          }); */
+  }
+</script>
+</body>
+</html>

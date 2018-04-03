@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>SpotMeBro - Matches List</title>
+	<script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+  <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+	<link rel="stylesheet" type="text/css" href="matchespage.css">
+</head>
+<body>
+	<div class="container">
+		<nav class="btn-group">
+			<button onclick="location.href='mainpage.html'"><strong>Home Page</strong></a></button>
+      <button onclick="location.href='about.html'"><strong>About SpotMeBro</strong></button>
+      <button onclick="location.href='matchespage.html'"><strong>Go to your Matches</strong></button>
+      <button onclick="location.href='preferenceEditor.html'"><strong>Go to your Preference Editor</strong></button>
+      <button onclick="location.href='profilepage.html'"><strong>Go to your Profile</strong></button>
+      <button onclick="location.href='availability.html'"><strong>Select your Availability</strong></button>
+      <button onclick="location.href='conversations.html'"><strong>Conversations</strong></button>
+      <button onclick="location.href='contact.html'"><strong>Contact SpotMeBro</strong></button>
+			<button onclick="location.href='help.html'"><strong>Help</strong></button>
+			<button id="btnSignOut" onclick="firebase.auth().signOut();" onclick="window.location = 'signin.html'"><strong>Logout</strong></button>
+		</nav>
+		<div id="matchContainer">
+			<h1>List of Matches</h1>
+			<div id="availabilityList">
+				<p id="pheading">Users available at </p>
+				<p id="pid"></p>
+			</div>
+		</div>
+	</div>
+
+	<script src="matchespage.js"></script>
+
+	<script>
+		const dbRef = firebase.database().ref();
+		function getMatches(userid, availS) {
+			availS = availS.split(",");
+			availS.pop(); // get rid of empty end comma
+			// availS is defined exactly how I want
+	     var clickedTime = window.location.href;
+	     clickedTime = clickedTime.split("?");
+	     clickedTime = clickedTime[1].split("=");
+	     clickedTime = clickedTime[1].split("_");
+	     document.getElementById("pheading").innerHTML += clickedTime[0] + " " + clickedTime[1] + " " + clickedTime[2];
+			var emailArr = [];
+
+			dbRef.child("Users").child(userid).child("Preferences").once("value", function(snapshot) {
+
+				var myGenPref = snapshot.val().Preferred_Gender;
+				var myStyle = snapshot.val().Style;
+
+				dbRef.child(clickedTime[0]).child(clickedTime[1]).once("value", function(snapshot) {
+					snapshot.forEach(function(child) {
+						if (child.key == userid){
+						} else if ( (child.val().Gender == myGenPref || myGenPref == "NoPreference") && child.val().Style == myStyle ) {
+							emailArr.push(child.val().Email);
+							console.log(child.val().Gender + " : " + child.val().Style);
+						}
+					});
+
+					for (var k = 0; k < emailArr.length; k++) {
+						document.getElementById("pid").innerHTML += "<b><a href=\"matchesprofile.html?email=" + emailArr[k] + "\">" + emailArr[k] + "</br>";
+					}
+				}); // end of snapshot
+
+		}); // snap for personal preferences
+
+		} // end of getMatches function
+	</script>
+</body>
+</html>

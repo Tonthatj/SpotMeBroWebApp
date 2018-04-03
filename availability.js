@@ -11,71 +11,198 @@
   };
   firebase.initializeApp(config);
 
+  /*
+    page is not connecting to html, not sure why
+    check closing brackets and paranthesis
+
+    ANSWER: can't have multiple js files with db config for one html
+  */
 
   const btnSubmit = document.getElementById("btnSubmit");
   const day = document.getElementById("daysOfWeek");
   const hour = document.getElementById("hour");
   const ampm = document.getElementById("timeOfDay");
 
-  var fbRef = firebase.database().ref()
-  
-  btnSubmit.addEventListener('click', e => 
+  // reference to save data must be set globally
+  var fbRef = firebase.database().ref().child('Users');
+  var fbRefAvail = firebase.database().ref();
+
+  var availString = "";
+
+  firebase.auth().onAuthStateChanged(user => {
+    if(user){
+
+      var uidPERM = user.uid;
+      var availInFb;
+      // still can't get access to outside of block
+      fbRef.child(user.uid).child("Availability").on("value", function(snapshot) {
+        availString = snapshot.val();
+
+        //console.log(availString);
+
+        var str = availString.split(",");
+        str.pop(); // to remove empty end entry because there is an extra comma at end
+        var len = str.length;
+
+        /* implement sorting algo to put in day of week order then chrono order */
+
+
+        for (var i = 0; i < len; i++) {
+
+          if (i == 0) {
+            document.getElementById("availP").innerHTML += "<ul></br>";
+          }
+
+          document.getElementById("availP").innerHTML += "<li" + " class=\"availEntries\" id=\"item" + i + "\" onclick=\"deleteEntry(" + i + ")\">" + str[i] + "</li></br>";
+        }
+        document.getElementById("availP").innerHTML += "</ul>";
+      });
+    }
+  })
+
+  /* Everytime page loads need to retreive the current Availability string in database, availInFb,
+    and assign it to availString to maintain data flow or else everytime the loads loads it will be wiped */
+
+  function submitTime(){
+
+
+  	  // make same as mobile app
+
+      /* can't use hour.value because it will change the value in dropdown box,
+         if out of range it will be blank,
+         need to create new variable */
+
+
+      // var.value are stored as strings, this cause comparison problems
+      var hourMT = parseInt(hour.value);
+
+
+      if (ampm.value == "AM" && hourMT == 12) {
+        hourMT = 0;
+      } else if(ampm.value == "PM") {
+
+    		  switch(hourMT) {
+
+    		      case 1:
+    		          hourMT = 13;
+    		          break;
+
+    		      case 2:
+    		          hourMT = 14;
+    		          break;
+
+    		      case 3:
+    		          hourMT = 15;
+    		          break;
+
+    		      case 4:
+    		          hourMT = 16;
+    		          break;
+
+    		      case 5:
+    		          hourMT = 17;
+    		          break;
+
+    		      case 6:
+    		          hourMT = 18;
+    		          break;
+
+    		      case 7:
+    		          hourMT = 19;
+    		          break;
+
+    		      case 8:
+    		          hourMT = 20;
+    		          break;
+
+    		      case 9:
+    		          hourMT = 21;
+    		          break;
+
+    		      case 10:
+    		          hourMT = 22;
+    		          break;
+
+    		      case 11:
+    		          hourMT = 23;
+    		          break;
+    		  }
+
+        //console.log(day.value + " " + hour.value + " " + ampm.value);
+        //console.log("hourMT is equal to " + hourMT);
+
+  	  }
+
+
+    var user = firebase.auth().currentUser;
+    var userEmail = user.email;
+    var userId = user.uid;
+
+    availString += day.value + " " + hourMT + ", ";
+
+
+
+    var style;
+    var gender;
+
+    firebase.database().ref().child('Users').child(userId).once('value').then(function(snapshot) {
+
+        /* issues accessing these snap values outside of block,
+        quick work around is to do all data processing inside func block */
+        style = snapshot.val().Preferences.Style;
+        gender = snapshot.val().Gender;
+
+        // creates the new availability entry by day of week
+        fbRefAvail.child(day.value).child(hourMT).child(userId).set({
+          Gender: gender,
+          Style: style,
+          Email: userEmail
+        });
+
+
+
+        /* says null right before first entry MUST FIX! */
+        // update availability in db under uid
+        fbRef.child(userId).update({
+          Availability: availString
+        });
+
+
+
+        //alert("Availability has been entered for " + day.value + " " + hour.value + ampm.value + " (" + hourMT + ")");
+        //console.log(availString);
+      });
+      // cannot access snap values outside of brackets even if declared outside block
+
+      // need to do this to "reset" listing or else would be redundant
+      document.getElementById("availP").innerHTML = "";
+
+      // end of button listener
+  }
+
+  //displays list of availability
+  function makeUL()
   {
-	  
-	  // make same as mobile app
-	  if(ampm == pm)
-	  {
-		  switch(hour) {
-		      case 12:
-		          hour = 12;
-		          break;
-		      case 1:
-		          hour = 13;
-		          break;
-		      case 2:
-		          hour = 14;
-		          break;
-		      case 3:
-		          hour = 15
-		          break;
-		      case 4:
-		          hour = 16;
-		          break;
-		      case 5:
-		          hour = 17;
-		          break;
-		      case 6:
-		          hour = 18;
-		          break;
-		      case 7:
-		          hour = 19;
-		          break;
-		      case 8:
-		          hour = 20;
-		          break;
-		      case 9:
-		          hour = 21
-		          break;
-		      case 10:
-		          hour = 22;
-		          break;
-		      case 11:
-		          hour = 23;
-		          break;
-		      
-		  }
-	  }
-	      var uidPERM = firebaseUser.uid;
-		  
-		  var availabilities = fbRef.child(uidPERM).child("Availability").val()
-		  var availabilities = availabilities + "," + day + " " + hour + " " + ampm + " ";
-		  fbRef.child(uidPERM).child("Availability").updates(availabilities);
-	      fbRef.child(day).child(hour).child(uidPERM).set({
-	        // using .value only works here not at var initialization
-	        Email: txtEmail.value,
-			Gender: //these are supposed to be global vars created in main
-			Style: //these are supposed to be global vars created in main
-	        });   
-	}
-  });
+    //http://jsfiddle.net/minitech/sTLbj/4/
+    var availability
+
+    firebase.database().ref().child('Users').child(userUid).once('value').then(function(snapshot) {
+        availability = snapshot.val().Availability;
+    });
+
+    var array = availability.split(",").map(Text);
+
+      var a = '<ul>',   //start of list
+          b = '</ul>',  //end of list
+          m = [];       //stuff in list
+
+      // Right now, this loop only works with one
+      // explicitly specified array (options[0] aka 'set0')
+      for (i = 0; i < array.length; i += 1){
+          m[i] = '<li>' + array[i] + '</li>';
+      }
+
+      document.getElementById('foo').innerHTML = a + m + b;
+  }
+// JT added code @ 7:36 try something like this for dynamically building the list
 } ());

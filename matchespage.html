@@ -1,52 +1,51 @@
+<!DOCTYPE html>
 <html>
-<Body>
-<ul id='Your Availabilities'>
-<script>
-	{
-
-	  // Initialize Firebase
-	  var config = {
-	    apiKey: "AIzaSyAK7odv2vBxJdDMThZHkBjoNdsypVNDGDU",
-	    authDomain: "spotmebro-82458.firebaseapp.com",
-	    databaseURL: "https://spotmebro-82458.firebaseio.com",
-	    projectId: "spotmebro-82458",
-	    storageBucket: "spotmebro-82458.appspot.com",
-	    messagingSenderId: "737240148087"
-	  };
-
-
-	  firebase.initializeApp(config);
-
-	  var fbRef = firebase.database().ref();
-	  var uidPERM = firebaseUser.uid;
-	  var availabilities = fbRef.child(uidPERM).child("Availability").val()
-
-	  times = availabilities.split(",");
-	  for (var k = 0; k < times.length; k++)
-	  {
-		  document.write('<li' + 'value="' + times[k] +'"onclick= "goto(this)">' + 		  times[k] + '</li>');
-	  }
-
-	  // goto page here
-	  function goto(elm) {
-		//pass var x to next page, var x being time
-	    var x = elm.getAttribute('value');
-	    console.log(x);
-	  }
-
-
-
-}
-</script>
-<title> Your Matches</title>
-	<div>
-	//provides a list of potential matches
-	<ul>
-		<li id="Match1"></li>
-		<li id="Match2"></li>
-		<li id="Match3"></li>
-			<li id=" Match4"></li>
-			</ul>
+<head>
+	<title>SpotMeBro - Matches</title>
+	<script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="matchespage.css">
+</head>
+<body>
+	<nav class="btn-group">
+		<button onclick="location.href='mainpage.html'"><strong>Home Page</strong></a></button>
+		<button onclick="location.href='about.html'"><strong>About SpotMeBro</strong></button>
+		<button onclick="location.href='matchespage.html'"><strong>Go to your Matches</strong></button>
+		<button onclick="location.href='preferenceEditor.html'"><strong>Go to your Preference Editor</strong></button>
+		<button onclick="location.href='profilepage.html'"><strong>Go to your Profile</strong></button>
+		<button onclick="location.href='availability.html'"><strong>Select your Availability</strong></button>
+		<button onclick="location.href='conversations.html'"><strong>Conversations</strong></button>
+		<button onclick="location.href='contact.html'"><strong>Contact SpotMeBro</strong></button>
+		<button onclick="location.href='help.html'"><strong>Help</strong></button>
+		<button id="btnSignOut" onclick="firebase.auth().signOut();" onclick="window.location = 'signin.html'"><strong>Logout</strong></button>
+	</nav>
+	<div class="container">
+		<h1>Matches</h1>
+		<div id="matchSection">
+			<p><em>Select an availability to view matches:</em></p>
+			<p id="pid"></p>
 		</div>
+	</div>
+
+	<script src="matchespage.js"></script>
+	<script>
+	const dbRef = firebase.database().ref();
+
+	function getMatches(userid, availS) {
+		availS = availS.split(",");
+		availS.pop(); // get rid of empty end comma
+		// availS is defined exactly how I want
+
+		for (var i = 0; i < availS.length; i++) {
+			var availS2 = availS[i].split(" ");
+			if(availS2[1] > 12) {
+				availS2[1] = availS2[1] - 12;
+				document.getElementById("pid").innerHTML += "<b><a href=\"matchespage2.html?time="+availS2[0]+"_"+availS2[1]+"_"+availS2[2]+"\">" + availS2[0] + " " + availS2[1] + " " + availS2[2] + "</a></b></br>";
+			} else {
+				document.getElementById("pid").innerHTML += "<b><a href=\"matchespage2.html?time="+availS2[0]+"_"+availS2[1]+"_"+availS2[2]+"\">" + availS2[0] + " " + availS2[1] + " " + availS2[2] + "</a></b></br>";
+			}
+		} // end of for loop
+	} // end of getMatches function
+	</script>
 </body>
 </html>

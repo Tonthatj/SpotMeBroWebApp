@@ -1,64 +1,29 @@
+<!DOCTYPE html>
 <html>
-
 <head>
-	<title>Sign-in!</title>
-
-	<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+	<title>Signin</title>
+	<script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
 	<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
-	<link rel="stylesheet" type="text/css" href="styles.css">
-
-
-
-	<!--
-	<script>
-	function validateForm() {
-			var emailInput = document.forms["signup_form"]["email"].value;
-			if (emailInput == "") {
-					alert("Name must be filled out!");
-					return false;
-			}
-			if (!emailInput.includes("@wit.edu")) {
-					alert("MUST BE WIT EMAIL!");
-					return false;
-			}
-	}
-	</script>
-	-->
-
+	<link rel="stylesheet" type="text/css" href="signin.css">
 </head>
-
-
-<body id="bodyid">
-
-
+<body>
 	<div class="container">
-		Email:</br>
-		<input id="txtEmail" type="email" placeholder="Email"><br>
-		Password</br>
-		<input id="txtPassword" type="password" placeholder="Password"></br>
-
-		<button id="btnLogin" class="btn btn-action">
-			Login
-		</button>
-
-		<!-- delete later
-		<button id="btnSignUp" class="btn btn-secondary">
-			Sign-up
-		</button> -->
-
-		<!-- do not need for sign-in page
-		<button id="btnLogout" class="btn btn-action hide">
-			Logout
-		</button> -->
-
+		<h1>SpotMeBro Login</h1>
+		<div id="signinInfo">
+			Email:</br>
+			<input id="txtEmail" type="email" placeholder="Email"><br>
+			Password</br>
+			<input id="txtPassword" type="password" placeholder="Password"></br>
+		</div>
+		<br>
+		<div id="button">
+			<button id="btnLogin" class="btn btn-action">Login</button>
+			<button id="btn_SignUp" onclick="location.href='signup.html'">Sign-Up!</button>
+			<button id="btnReset" onclick="location.href='resetpassword.html'">Reset Password</button>
+		</div>
 	</div>
-
-	</br>
-	<a href="signup.html">Sign-up!</a>
 
 	<script src="signin.js"></script>
 
-
 </body>
-
 </html>

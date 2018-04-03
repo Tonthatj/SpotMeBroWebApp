@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+  <script type="text/javascript" src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+  <script type="text/javascript" src="mainpage.js"></script>
+	<link rel="stylesheet" type="text/css" href="profileeditor.css">
+</head>
+<body>
+	<div class="container">
+		<nav class="btn-group">
+			<button onclick="location.href='mainpage.html'"><strong>Home Page</strong></a></button>
+      <button onclick="location.href='about.html'"><strong>About SpotMeBro</strong></button>
+      <button onclick="location.href='matchespage.html'"><strong>Go to your Matches</strong></button>
+      <button onclick="location.href='preferenceEditor.html'"><strong>Go to your Preference Editor</strong></button>
+      <button onclick="location.href='profilepage.html'"><strong>Go to your Profile</strong></button>
+      <button onclick="location.href='availability.html'"><strong>Select your Availability</strong></button>
+			<button onclick="location.href='conversations.html'"><strong>Conversations</strong></button>
+      <button onclick="location.href='contact.html'"><strong>Contact SpotMeBro</strong></button>
+			<button onclick="location.href='help.html'"><strong>Help</strong></button>
+			<button id="btnSignOut" onclick="firebase.auth().signOut();" onclick="window.location = 'signin.html'"><strong>Logout</strong></button>
+		</nav>
+		<div id="profileEditorContainer">
+			<h1>Profile Editor</h1>
+			<div id="editInfo">
+				<p style="color:red;">WARNING: If you change your name or gender, all previous conversations
+				and availabilities will be deleted.</p>
+				<p id="Name">Current Name: </p>
+        <input id="txtName" type="text" placeholder="Name"><br/>
+				<p id="Gender">Current Gender: </p>
+        <select id="selectGender" name="gender">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+			</div>
+      <button onclick="location.href='profilepage.html'">Done Editing</button>
+      <button id="submitProfileChanges" onclick="submit()">Submit</button>
+		</div>
+	</div>
+
+	<script src="profileeditor.js"></script>
+  <script>
+    var fbRef = firebase.database().ref().child('Users');
+    var newUserName = document.getElementById('txtName');
+    var newUserGender = document.getElementById('selectGender');
+    var uidPERM;
+		var nameArr;
+		var messageArr;
+		var userName;
+		var userGender;
+		var tmpName = " ";
+
+    firebase.auth().onAuthStateChanged(user => {
+      if(user){
+        uidPERM = user.uid;
+
+        var userId = firebase.auth().currentUser.uid;
+        return firebase.database().ref('/Users/' + userId).once('value').then(function(snapshot) {
+          userName = snapshot.val().Name;
+          userGender = snapshot.val().Gender;
+
+          document.getElementById("Name").innerHTML += userName;
+          document.getElementById("Gender").innerHTML += userGender;
+        });
+      }
+    })
+
+		function snapshotToArray(snapshot){
+			var returnArr = [];
+
+			snapshot.forEach(function(childSnapshot){
+				var item = childSnapshot.val();
+				item.key = childSnapshot.key;
+
+				returnArr.push(item);
+			});
+
+			return returnArr;
+		}
+
+		//Function when user clicks submit
+    function submit(){
+			var fbRef2 = firebase.database().ref();
+			var userId = firebase.auth().currentUser.uid;
+			//Gets all conversations associated with the user's current name
+			console.log("All conversations associated with the current name will be deleted.");
+			fbRef2.child('Messages').once('value', function(snap){
+				var messageArr = snapshotToArray(snap);
+				console.log(messageArr);
+				for(var k = 0; k < messageArr.length; k++){
+					console.log(messageArr[k].key);
+					var messageName = messageArr[k].key;
+					if(messageName.includes(userName)){
+						console.log('messageName');
+						fbRefUsers = firebase.database().ref().child("Messages").child(messageName);
+						fbRefUsers.remove();
+					}
+				}
+			})
+
+			var parts = [];
+			var fbRefUsers2;
+			var fbRef3 = firebase.database().ref().child('Users').child(userId);
+			var fbRef4 = firebase.database().ref();
+			console.log('All availabilities associated with the current name will be deleted');
+			fbRef3.child('Availability').once('value', function(snap){
+				var string = snap.val();
+				var availabilityArr = string.split(",");
+				for(var k = 0; k < availabilityArr.length; k++){
+					if(k == availabilityArr.length - 1){
+
+					} else {
+						var availabilityName = availabilityArr[k];
+						parts = availabilityName.split(" ");
+						var Day = parts[0];
+						var Time = parts[1];
+						console.log("Availability: " + availabilityName);
+						console.log("User id: " + userId);
+						fbRef4.child(Day).child(Time).child(userId).remove();
+					}
+				}
+				fbRef3.update({
+					Availability: ""
+				});
+			})
+
+      fbRef2.child("Users").once("value", function(snap){
+				nameArr = snapshotToArray(snap);
+				for(var i = 0; i < nameArr.length; i++){
+					var matchedName = nameArr[i].Name;
+					var newName = newUserName.value;
+					if(matchedName == newName){
+						tmpName = nameArr[i].Name;
+					}
+				}
+				//Sets user's new name and gender if the inputted name is not in use.
+        if(tmpName == " "){
+          fbRef.child(userId).update({
+						Name: newUserName.value,
+            Gender: newUserGender.value
+          });
+          alert("Profile changes has been updated to " + newUserName.value + " and " + newUserGender.value + ".");
+          window.location.reload();
+        } else {
+          console.log("Name already in use.");
+          alert("Name already in use.");
+        }
+      })
+    }
+  </script>
+</body>
+</html>

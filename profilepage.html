@@ -1,25 +1,75 @@
+<!DOCTYPE html>
+<html>
 <head>
-	<script src="https://www.gstatic.com/firebasejs/4.10.1/firebase.js"></script>
-	<script>
-		// Initialize Firebase
-		var config = {
-		  apiKey: "AIzaSyAK7odv2vBxJdDMThZHkBjoNdsypVNDGDU",
-		  authDomain: "spotmebro-82458.firebaseapp.com",
-		  databaseURL: "https://spotmebro-82458.firebaseio.com",
-		  projectId: "spotmebro-82458",
-		  storageBucket: "spotmebro-82458.appspot.com",
-		  messagingSenderId: "737240148087"
-		};
-		firebase.initializeApp(config);
+	<script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+  <script type="text/javascript" src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+  <script type="text/javascript" src="mainpage.js"></script>
+	<link rel="stylesheet" type="text/css" href="profilepage.css">
+</head>
 <body>
-	<div>
-			<ul>
-				<li id="Security_Answer"></li>
-				<li id="Email"></li>
-				<li id="Gender"></li>
-					<li id="Security Question"></li>
-					</ul>
+	<div class="container">
+		<nav class="btn-group">
+			<button onclick="location.href='mainpage.html'"><strong>Home Page</strong></a></button>
+      <button onclick="location.href='about.html'"><strong>About SpotMeBro</strong></button>
+      <button onclick="location.href='matchespage.html'"><strong>Go to your Matches</strong></button>
+      <button onclick="location.href='preferenceEditor.html'"><strong>Go to your Preference Editor</strong></button>
+      <button onclick="location.href='profilepage.html'"><strong>Go to your Profile</strong></button>
+      <button onclick="location.href='availability.html'"><strong>Select your Availability</strong></button>
+			<button onclick="location.href='conversations.html'"><strong>Conversations</strong></button>
+      <button onclick="location.href='contact.html'"><strong>Contact SpotMeBro</strong></button>
+			<button onclick="location.href='help.html'"><strong>Help</strong></button>
+			<button id="btnSignOut" onclick="firebase.auth().signOut();" onclick="window.location = 'signin.html'"><strong>Logout</strong></button>
+		</nav>
+		<div id="profileContainer">
+			<h1>Profile</h1>
+			<div id="profileInfo">
+				<p id="Name">Name: </p>
+				<p id="Email">Email: </p>
+				<p id="Gender">Gender: </p>
+			</div>
+			<button onclick="location.href='profileeditor.html'">Profile Editor</button>
 		</div>
-</body>
+	</div>
 
-		</head>
+	<script type="text/javascript">
+		// reference to save data must be set globally
+		var fbRef = firebase.database().ref().child('Users');
+
+	  firebase.auth().onAuthStateChanged(user => {
+	  	if(user){
+	      var uidPERM = user.uid;
+	      fbEmail = user.email;
+	      //fbGender = user.gender; //undefined
+				document.getElementById("Email").innerHTML += fbEmail;
+
+				var userId = firebase.auth().currentUser.uid;
+				return firebase.database().ref('/Users/' + userId).once('value').then(function(snapshot) {
+						var nn = snapshot.val().Name;
+						var gg = snapshot.val().Gender;
+						document.getElementById("Name").innerHTML += nn;
+						document.getElementById("Gender").innerHTML += gg;
+				});
+
+
+				fbRef.on("value", snap =>{
+		      try
+		      {
+		        var availability = snap.child("Availability").val()
+		      }
+		      catch(err)
+		      {
+		        //no availability was entered yet
+						alert("No availability has been entered");
+		      }
+		      //var style = snap.child("Style").val()
+		      //var gender = snap.child("Gender").val()
+	    	});
+
+			// not sure if these work but no longer needed
+	    //fbSecurityQ = user.security;
+	    //fbSecurityA = user.answer;
+	  	}
+		})
+	</script>
+</body>
+</html>
