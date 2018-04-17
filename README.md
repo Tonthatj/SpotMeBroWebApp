@@ -1,1 +1,6 @@
-Because I (Kyle Kable) was using the command line, I was not made a contributor until I made commits through Atom at the very end...
+SpotMeBro
+By Jonathan Tonthat, Yan Wen Huang, Kyle Kable, and Alexan Topalian
+
+Link for hosted SpotMeBro web application:
+
+spotmebro-82458.firebaseapp.com
